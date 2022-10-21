@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml" xmlns:sec="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title>Menu</title>
+</head>
+<body>
+<table id="menu" width="100%">
+    <tr>
+        <td>
+                <span>Menu -></span>
+                <span><a th:href="@{/}">Home</a></span>
+                <span><a th:href="@{/products}">Products</a></span>
+                <span sec:authorize="hasAnyAuthority('ADMIN', 'MANAGER')"><a th:href="@{/users}">Users</a></span>
+        </td>
+
+
+        <td align="right">
+            <div sec:authorize="isAuthenticated()">
+                <div>
+                    Hello, <a th:href="@{/users/profile}"><span sec:authentication="principal.username">Bill</span></a>
+                </div>
+                <div>
+                    <a th:href="@{/logout}">Logout</a>
+                </div>
+            </div>
+
+            <div sec:authorize="!isAuthenticated()">
+                <div>
+                    Hello, Unknown. Please <a th:href="@{/login}">Login</a>
+                </div>
+            </div>
+        </td>
+    </tr>
+    <tr>
+        <td></td>
+        <td align="right"><a th:href="@{/bucket}">Bucket</a></td>
+    </tr>
+</table>
+</body>
+</html>

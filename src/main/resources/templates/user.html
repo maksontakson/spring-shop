@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml" xmlns:sec="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title>Add user</title>
+</head>
+<body>
+<div th:insert="~{fragments/menu :: #menu}"></div>
+
+<form th:action="@{/users/new}" th:object="${user}" method="post">
+    <table border="1">
+        <tr>
+            <td>Name</td>
+            <td><input type="text" placeholder="Write your name" name="op" th:field="*{username}"></td>
+        </tr>
+        <tr>
+            <td>Password</td>
+            <td><input type="password" placeholder="Write your password" th:field="*{password}"></td>
+        </tr>
+        <tr>
+            <td>Matching Password</td>
+            <td><input type="password" placeholder="Write your matching password" th:field="*{matchingPassword}"></td>
+        </tr>
+        <tr>
+            <td>Email</td>
+            <td><input type="email" placeholder="Write your email" th:field="*{email}"></td>
+        </tr>
+    </table>
+    <button type="submit">Save</button>
+</form>
+</body>
+</html>
