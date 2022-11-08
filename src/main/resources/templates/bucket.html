@@ -22,8 +22,12 @@
             <td th:text="${detail.amount}">2</td>
             <td th:text="${detail.price}">11.0</td>
             <td th:text="${detail.sum}">22.0</td>
-            <td> <a th:href="@{bucket/remove/{id}/(id=${detail.productId})}">Remove</a></td>
+            <td> <a th:href="@{bucket/remove/{id}/{sessionId}(id = ${detail.productId}, sessionId = ${sessionId})}">Remove</a></td>
         </tr>
     </table>
+
+    <form th:action="@{/bucket}" method="post">
+        <button type="submit">Create Order</button>
+    </form>
 </body>
 </html>

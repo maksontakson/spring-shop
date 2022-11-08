@@ -31,8 +31,8 @@ public class Order {
     private User user;
     private BigDecimal sum;
     private String address;
-    @OneToMany(cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
     private List<OrderDetails> details;
-    @Enumerated
+    @Enumerated(EnumType.STRING)
     private OrderStatus status;
 }

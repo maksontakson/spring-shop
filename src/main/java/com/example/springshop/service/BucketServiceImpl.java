@@ -2,9 +2,7 @@ package com.example.springshop.service;
 
 import com.example.springshop.dao.BucketRepository;
 import com.example.springshop.dao.ProductRepository;
-import com.example.springshop.domain.Bucket;
-import com.example.springshop.domain.Product;
-import com.example.springshop.domain.User;
+import com.example.springshop.domain.*;
 import com.example.springshop.dto.BucketDTO;
 import com.example.springshop.dto.BucketDetailDTO;
 import org.springframework.stereotype.Service;
@@ -21,19 +19,22 @@ public class BucketServiceImpl implements BucketService {
     private final BucketRepository bucketRepository;
     private final ProductRepository productRepository;
     private final UserService userService;
+    private final OrderService orderService;
 
-    public BucketServiceImpl(BucketRepository bucketRepository, ProductRepository productRepository, UserService userService) {
+    public BucketServiceImpl(BucketRepository bucketRepository, ProductRepository productRepository, UserService userService, OrderService orderService) {
         this.bucketRepository = bucketRepository;
         this.productRepository = productRepository;
         this.userService = userService;
+        this.orderService = orderService;
     }
 
     @Override
-    public Bucket createBucket(User user, List<Integer> productIds) {
+    public Bucket createBucket(User user, List<Integer> productIds, String sessionId) {
         Bucket bucket = new Bucket();
         bucket.setUser(user);
         List<Product> productList = getCollectRefProductsByIds(productIds);
         bucket.setProducts(productList);
+        bucket.setSessionId(sessionId);
         return bucketRepository.save(bucket);
     }
 
@@ -53,11 +54,18 @@ public class BucketServiceImpl implements BucketService {
     @Override
     public BucketDTO getBucketByUser(String name) {
         User user = userService.findByName(name);
-        if(user == null && user.getBucket() == null) return new BucketDTO();
+        if(user == null || user.getBucket() == null) {
+            return new BucketDTO();
+        }
 
         BucketDTO bucketDTO = new BucketDTO();
         Map<Integer, BucketDetailDTO> mapByProductId = new HashMap<>();
         List<Product> products = user.getBucket().getProducts();
+
+        return updateAndGetBucketDTO(bucketDTO, mapByProductId, products);
+    }
+
+    private BucketDTO updateAndGetBucketDTO(BucketDTO bucketDTO, Map<Integer, BucketDetailDTO> mapByProductId, List<Product> products) {
         for(Product product : products) {
             BucketDetailDTO bucketDetailDTO = mapByProductId.get(product.getId());
             if(bucketDetailDTO == null) {
@@ -76,12 +84,104 @@ public class BucketServiceImpl implements BucketService {
     }
 
     @Override
-    public void removeProduct(Integer id, String name) {
+    public Bucket getBucketBySessionId(String sessionId) {
+        Bucket bucket = bucketRepository.getBucketBySessionId(sessionId);
+        return bucket;
+    }
+
+    @Override
+    public BucketDTO getBucketDTOBySessionId(String sessionId) {
+        Bucket bucket = getBucketBySessionId(sessionId);
+        if(bucket == null) {
+            return new BucketDTO();
+        }
+        BucketDTO bucketDTO = new BucketDTO();
+        Map<Integer, BucketDetailDTO> mapByProductId = new HashMap<>();
+        List<Product>products = bucket.getProducts();
+        return updateAndGetBucketDTO(bucketDTO, mapByProductId, products);
+    }
+
+    @Override
+    public void removeProductByUser(Integer id, String name) {
         User user = userService.findByName(name);
         Bucket bucket = user.getBucket();
         List<Product> products = bucket.getProducts();
         products.remove(productRepository.getReferenceById(id));
         bucket.setProducts(products);
+        bucketRepository.save(bucket);
+    }
+
+    @Override
+    public void removeProductBySession(Integer id, String sessionId) {
+        Bucket bucket = getBucketBySessionId(sessionId);
+        List<Product> products = bucket.getProducts();
+        products.remove(productRepository.getReferenceById(id));
+        bucket.setProducts(products);
+        bucketRepository.save(bucket);
+    }
+
+    @Override
+    public void commitBucketToOrderByUser(String name) {
+        User user = userService.findByName(name);
+        if(user == null){
+            throw new RuntimeException("User is not found");
+        }
+        Bucket bucket = user.getBucket();
+        if(bucket == null || bucket.getProducts().isEmpty()){
+            return;
+        }
+        System.out.println("After if statements");
+        Order order = new Order();
+        order.setStatus(OrderStatus.NEW);
+        order.setUser(user);
+
+        Map<Product, Long> productWithAmount = bucket.getProducts().stream()
+                .collect(Collectors.groupingBy(product -> product, Collectors.counting()));
+
+        List<OrderDetails> orderDetails = productWithAmount.entrySet().stream()
+                .map(pair -> new OrderDetails(order, pair.getKey(), pair.getValue()))
+                .collect(Collectors.toList());
+
+        BigDecimal total = new BigDecimal(orderDetails.stream()
+                .map(detail -> detail.getPrice().multiply(detail.getAmount()))
+                .mapToDouble(BigDecimal::doubleValue).sum());
+
+        order.setDetails(orderDetails);
+        order.setSum(total);
+        order.setAddress("none");
+
+        orderService.save(order);
+        bucket.getProducts().clear();
+        bucketRepository.save(bucket);
+    }
+
+    @Override
+    public void commitBucketToOrderBySession(String jSessionId) {
+        Bucket bucket = getBucketBySessionId(jSessionId);
+        if(bucket == null || bucket.getProducts().isEmpty()) {
+            return;
+        }
+        Order order = new Order();
+        order.setStatus(OrderStatus.NEW);
+        order.setUser(null);
+
+        Map<Product, Long> productWithAmount = bucket.getProducts().stream()
+                .collect(Collectors.groupingBy(product -> product, Collectors.counting()));
+
+        List<OrderDetails> orderDetails = productWithAmount.entrySet().stream()
+                .map(pair -> new OrderDetails(order, pair.getKey(), pair.getValue()))
+                .collect(Collectors.toList());
+
+        BigDecimal total = new BigDecimal(orderDetails.stream()
+                .map(detail -> detail.getPrice().multiply(detail.getAmount()))
+                .mapToDouble(BigDecimal::doubleValue).sum());
+
+        order.setDetails(orderDetails);
+        order.setSum(total);
+        order.setAddress("none");
+
+        orderService.save(order);
+        bucket.getProducts().clear();
         bucketRepository.save(bucket);
     }
 }

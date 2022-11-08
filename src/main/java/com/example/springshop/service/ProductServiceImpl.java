@@ -34,7 +34,7 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public void addToUserBucket(Integer productId, String username) {
+    public void addToUserBucket(Integer productId, String username, String sessionId) {
         User user = userService.findByName(username);
         if(user == null) {
             throw new RuntimeException("User not find " + username);
@@ -42,9 +42,18 @@ public class ProductServiceImpl implements ProductService {
 
         Bucket bucket = user.getBucket();
         if(bucket == null) {
-            Bucket newBucket = bucketService.createBucket(user, Collections.singletonList(productId));
+            Bucket newBucket = bucketService.createBucket(user, Collections.singletonList(productId), null);
             user.setBucket(newBucket);
             userService.save(user);
+        } else {
+            bucketService.addProducts(bucket, Collections.singletonList(productId));
+        }
+    }
+    @Override
+    public void addProductToSession(Integer productId, String JSessionId) {
+        Bucket bucket = bucketService.getBucketBySessionId(JSessionId);
+        if(bucket == null) {
+            bucket = bucketService.createBucket(null, Collections.singletonList(productId), JSessionId);
         } else {
             bucketService.addProducts(bucket, Collections.singletonList(productId));
         }

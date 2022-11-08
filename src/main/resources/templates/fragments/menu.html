@@ -12,8 +12,8 @@
                 <span><a th:href="@{/}">Home</a></span>
                 <span><a th:href="@{/products}">Products</a></span>
                 <span sec:authorize="hasAnyAuthority('ADMIN', 'MANAGER')"><a th:href="@{/users}">Users</a></span>
+                <span><a th:href="@{/news-line}">News</a></span>
         </td>
-
 
         <td align="right">
             <div sec:authorize="isAuthenticated()">

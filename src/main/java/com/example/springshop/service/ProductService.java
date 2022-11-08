@@ -6,7 +6,9 @@ import java.util.List;
 
 public interface ProductService {
     List<ProductDTO> getAll();
-    void addToUserBucket(Integer productId, String username);
+    void addToUserBucket(Integer productId, String username, String sessionId);
 
     void addProduct(ProductDTO dto);
+
+    void addProductToSession(Integer id, String JSessionId);
 }
