@@ -1,0 +1,6 @@
+spring:
+  application:
+    name: news-line
+  cloud:
+    config:
+      uri: http://localhost:8888
