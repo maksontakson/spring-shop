@@ -53,4 +53,10 @@ public class ProductController {
     public void messageAddProduct(ProductDTO dto) {
         productService.addProduct(dto);
     }
+
+    @GetMapping("/{id}")
+    @ResponseBody
+    public ProductDTO getById(@PathVariable Integer id){
+        return productService.getById(id);
+    }
 }

@@ -60,6 +60,12 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
+    public ProductDTO getById(Integer id) {
+        Product product = productRepository.findById(id).orElse(new Product());
+        return ProductMapper.MAPPER.fromProduct(product);
+    }
+
+    @Override
     @Transactional
     public void addProduct(ProductDTO dto) {
         Product product = mapper.toProduct(dto);

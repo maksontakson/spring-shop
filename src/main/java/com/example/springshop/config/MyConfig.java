@@ -5,7 +5,11 @@ import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.Persistence;
 import javax.sql.DataSource;
 
 @Configuration
@@ -25,5 +29,11 @@ public class MyConfig {
         dataSourceBuilder.username(userName);
         dataSourceBuilder.password(password);
         return dataSourceBuilder.build();
+    }
+    @Bean
+    public EntityManager getEntityManager() {
+        EntityManagerFactory entityManagerFactory = Persistence.createEntityManagerFactory("Persistance");
+        EntityManager entityManager = entityManagerFactory.createEntityManager();
+        return entityManager;
     }
 }

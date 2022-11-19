@@ -5,8 +5,11 @@ import com.example.springshop.dao.ProductRepository;
 import com.example.springshop.domain.*;
 import com.example.springshop.dto.BucketDTO;
 import com.example.springshop.dto.BucketDetailDTO;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;

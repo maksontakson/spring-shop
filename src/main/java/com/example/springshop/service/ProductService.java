@@ -11,4 +11,5 @@ public interface ProductService {
     void addProduct(ProductDTO dto);
 
     void addProductToSession(Integer id, String JSessionId);
+    ProductDTO getById(Integer id);
 }
